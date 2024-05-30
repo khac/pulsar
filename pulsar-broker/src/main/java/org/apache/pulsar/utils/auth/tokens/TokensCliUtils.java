@@ -19,6 +19,7 @@
 package org.apache.pulsar.utils.auth.tokens;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.github.pixee.security.BoundedLineReader;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
@@ -195,7 +196,7 @@ public class TokensCliUtils {
             } else if (stdin) {
                 @Cleanup
                 BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-                token = r.readLine();
+                token = BoundedLineReader.readLine(r, 5_000_000);
             } else if (tokenFile != null) {
                 token = new String(Files.readAllBytes(Paths.get(tokenFile)), StandardCharsets.UTF_8);
             } else if (System.getenv("TOKEN") != null) {
@@ -262,7 +263,7 @@ public class TokensCliUtils {
             } else if (stdin) {
                 @Cleanup
                 BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
-                token = r.readLine();
+                token = BoundedLineReader.readLine(r, 5_000_000);
             } else if (tokenFile != null) {
                 token = new String(Files.readAllBytes(Paths.get(tokenFile)), StandardCharsets.UTF_8);
             } else if (System.getenv("TOKEN") != null) {

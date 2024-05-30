@@ -23,6 +23,7 @@
 
 package org.apache.pulsar.zookeeper;
 
+import io.github.pixee.security.BoundedLineReader;
 import static org.apache.bookkeeper.stream.protocol.ProtocolConstants.DEFAULT_STREAM_CONF;
 import static org.apache.commons.io.FileUtils.cleanDirectory;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -559,7 +560,7 @@ public class LocalBookkeeperEnsemble {
                     outstream.flush();
 
                     reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                    String line = reader.readLine();
+                    String line = BoundedLineReader.readLine(reader, 5_000_000);
                     if (line != null && line.startsWith("Zookeeper version:")) {
                         LOG.info("Server UP");
                         return true;
