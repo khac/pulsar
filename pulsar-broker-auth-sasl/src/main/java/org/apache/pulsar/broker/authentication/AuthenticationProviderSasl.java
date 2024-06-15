@@ -19,6 +19,7 @@
 package org.apache.pulsar.broker.authentication;
 
 import static com.google.common.base.Preconditions.checkState;
+import io.github.pixee.security.Newlines;
 import static org.apache.pulsar.broker.web.AuthenticationFilter.AuthenticatedDataAttributeName;
 import static org.apache.pulsar.broker.web.AuthenticationFilter.AuthenticatedRoleAttributeName;
 import static org.apache.pulsar.common.sasl.SaslConstants.JAAS_CLIENT_ALLOWED_IDS;
@@ -225,8 +226,8 @@ public class AuthenticationProviderSasl implements AuthenticationProvider {
     }
 
     private void setResponseHeaderState(HttpServletResponse response, String state) {
-        response.setHeader(SaslConstants.SASL_HEADER_TYPE, SaslConstants.SASL_TYPE_VALUE);
-        response.setHeader(SASL_HEADER_STATE, state);
+        response.setHeader(SaslConstants.SASL_HEADER_TYPE, Newlines.stripAll(SaslConstants.SASL_TYPE_VALUE));
+        response.setHeader(SASL_HEADER_STATE, Newlines.stripAll(state));
     }
 
     /**
@@ -265,7 +266,7 @@ public class AuthenticationProviderSasl implements AuthenticationProvider {
             } else {
                 checkState(request.getHeader(SASL_HEADER_STATE).equalsIgnoreCase(SASL_STATE_SERVER_CHECK_TOKEN));
                 setResponseHeaderState(response, SASL_STATE_COMPLETE);
-                response.setHeader(SASL_STATE_SERVER, request.getHeader(SASL_STATE_SERVER));
+                response.setHeader(SASL_STATE_SERVER, Newlines.stripAll(request.getHeader(SASL_STATE_SERVER)));
                 response.setStatus(HttpServletResponse.SC_OK);
                 if (log.isDebugEnabled()) {
                     log.debug("[{}] Server side role token verified success: {}", request.getRequestURI(),
@@ -295,10 +296,10 @@ public class AuthenticationProviderSasl implements AuthenticationProvider {
                 }
                 String authRole = state.getAuthRole();
                 String authToken = createAuthRoleToken(authRole, String.valueOf(state.getStateId()));
-                response.setHeader(SASL_AUTH_ROLE_TOKEN, authToken);
+                response.setHeader(SASL_AUTH_ROLE_TOKEN, Newlines.stripAll(authToken));
 
                 // auth request complete, return OK, wait for a new real request to come.
-                response.setHeader(SASL_STATE_SERVER, String.valueOf(state.getStateId()));
+                response.setHeader(SASL_STATE_SERVER, Newlines.stripAll(String.valueOf(state.getStateId())));
                 setResponseHeaderState(response, SASL_STATE_COMPLETE);
                 response.setStatus(HttpServletResponse.SC_OK);
 
@@ -312,8 +313,8 @@ public class AuthenticationProviderSasl implements AuthenticationProvider {
                         request.getRequestURI(), HttpServletResponse.SC_UNAUTHORIZED);
                 }
                 setResponseHeaderState(response, SASL_STATE_NEGOTIATE);
-                response.setHeader(SASL_STATE_SERVER, String.valueOf(state.getStateId()));
-                response.setHeader(SASL_AUTH_TOKEN, Base64.getEncoder().encodeToString(brokerData.getBytes()));
+                response.setHeader(SASL_STATE_SERVER, Newlines.stripAll(String.valueOf(state.getStateId())));
+                response.setHeader(SASL_AUTH_TOKEN, Newlines.stripAll(Base64.getEncoder().encodeToString(brokerData.getBytes())));
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "SASL Authentication not complete.");
                 return false;
             }
